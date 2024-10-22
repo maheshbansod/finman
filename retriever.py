@@ -80,4 +80,4 @@ def retrieve_and_save_sheets():
 
 
 if __name__ == "__main__":
-    main()
+    retrieve_and_save_sheets()
