@@ -177,15 +177,45 @@ impl App {
         let options = MatchOptions {
             ..Default::default()
         };
+        let file_content_filter = filter.description.map(|description| {
+            move |t: &Transaction| {
+                t.description
+                    .to_lowercase()
+                    .contains(&description.to_lowercase())
+            }
+        });
         for path in glob::glob_with(&pattern, options)? {
             let path = path.unwrap();
-            println!("{path:?}");
             let t_file = fs::read_to_string(&path)?;
             let t_file: TransactionsFile = serde_json::from_str(&t_file)?;
-            let mut t = t_file.transactions;
+            let mut t = if let Some(file_content_filter) = &file_content_filter {
+                t_file
+                    .transactions
+                    .into_iter()
+                    .filter(|t| file_content_filter(t))
+                    .collect()
+            } else {
+                t_file.transactions
+            };
             transactions.append(&mut t);
         }
         Ok(transactions)
+    }
+
+    pub fn display_transactions(&self, transactions: Vec<Transaction>) {
+        let mut expenses = 0f32;
+        let mut income = 0f32;
+        for transaction in transactions {
+            println!("{transaction}");
+            match transaction.transaction_type {
+                TransactionType::Income => income += transaction.amount,
+                TransactionType::Expense => expenses += transaction.amount,
+            }
+        }
+        let sum = income - expenses;
+        println!("Expenses: {expenses}");
+        println!("Income: {income}");
+        println!("Sum: Income - Expenses = {sum}");
     }
 }
 
@@ -193,14 +223,21 @@ pub struct TransactionListFilter {
     year: Option<i32>,
     month: Option<u32>,
     transaction_type: Option<TransactionType>,
+    description: Option<String>,
 }
 
 impl TransactionListFilter {
-    pub fn new() -> Self {
+    pub fn new(
+        year: Option<i32>,
+        month: Option<u32>,
+        transaction_type: Option<TransactionType>,
+        description: Option<String>,
+    ) -> Self {
         Self {
-            year: None,
-            month: None,
-            transaction_type: None,
+            year,
+            month,
+            transaction_type,
+            description,
         }
     }
 

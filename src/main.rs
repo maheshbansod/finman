@@ -30,22 +30,12 @@ fn main() -> Result<()> {
             year,
             month,
             transaction_type,
+            description,
         } => {
             let mut app = App::new()?;
-            let mut filter = TransactionListFilter::new();
-            if let Some(year) = year {
-                filter = filter.year(year);
-            }
-            if let Some(month) = month {
-                filter = filter.month(month);
-            }
-            if let Some(transaction_type) = transaction_type {
-                filter = filter.transaction_type(transaction_type);
-            }
+            let filter = TransactionListFilter::new(year, month, transaction_type, description);
             let transactions = app.list_transactions(filter)?;
-            for transaction in transactions {
-                println!("{transaction}");
-            }
+            app.display_transactions(transactions);
         }
     };
     Ok(())

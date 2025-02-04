@@ -25,5 +25,8 @@ pub enum Commands {
         month: Option<u32>,
         #[arg(short, long)]
         transaction_type: Option<TransactionType>,
+        #[arg(short, long)]
+        /// searches this case-insensitively within description
+        description: Option<String>,
     },
 }
