@@ -116,7 +116,7 @@ impl App {
         month: u32,
     ) -> PathBuf {
         let file_name = format!("{year}-{month}-{transaction_type}.json");
-        
+
         self.config.data_dir.join(&file_name)
     }
 
@@ -175,9 +175,6 @@ impl App {
             .to_string_lossy()
             .to_string();
         let mut transactions = Vec::new();
-        let options = MatchOptions {
-            ..Default::default()
-        };
         let file_content_filter = if filter.description.is_some() || filter.category.is_some() {
             let desc_regex = if let Some(description) = filter.description {
                 Some(Regex::new(&description.to_lowercase())?)
@@ -196,7 +193,7 @@ impl App {
         } else {
             None
         };
-        for path in glob::glob_with(&pattern, options)? {
+        for path in glob::glob_with(&pattern, MatchOptions::default())? {
             let path = path.unwrap();
             let t_file = fs::read_to_string(&path)?;
             let t_file: TransactionsFile = serde_json::from_str(&t_file)?;
@@ -215,8 +212,8 @@ impl App {
     }
 
     pub fn display_transactions(&self, transactions: Vec<Transaction>) {
-        let mut expenses = 0f32;
-        let mut income = 0f32;
+        let mut expenses = 0.0;
+        let mut income = 0.0;
         for transaction in transactions {
             println!("{transaction}");
             match transaction.transaction_type {
