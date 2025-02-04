@@ -7,6 +7,7 @@ use std::{
 use anyhow::{bail, Result};
 use chrono::{DateTime, Datelike, Local};
 use glob::MatchOptions;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -177,13 +178,24 @@ impl App {
         let options = MatchOptions {
             ..Default::default()
         };
-        let file_content_filter = filter.description.map(|description| {
-            move |t: &Transaction| {
-                t.description
-                    .to_lowercase()
-                    .contains(&description.to_lowercase())
-            }
-        });
+        let file_content_filter = if filter.description.is_some() || filter.category.is_some() {
+            let desc_regex = if let Some(description) = filter.description {
+                Some(Regex::new(&description.to_lowercase())?)
+            } else {
+                None
+            };
+            let category_regex = if let Some(category) = filter.category {
+                Some(Regex::new(&category.to_lowercase())?)
+            } else {
+                None
+            };
+            Some(move |t: &Transaction| {
+                desc_regex.is_some_and(|re| re.is_match(&t.description.to_lowercase()))
+                    || category_regex.is_some_and(|re| re.is_match(&t.category.to_lowercase()))
+            })
+        } else {
+            None
+        };
         for path in glob::glob_with(&pattern, options)? {
             let path = path.unwrap();
             let t_file = fs::read_to_string(&path)?;
@@ -192,7 +204,7 @@ impl App {
                 t_file
                     .transactions
                     .into_iter()
-                    .filter(|t| file_content_filter(t))
+                    .filter(|t| file_content_filter.clone()(t))
                     .collect()
             } else {
                 t_file.transactions
@@ -224,6 +236,7 @@ pub struct TransactionListFilter {
     month: Option<u32>,
     transaction_type: Option<TransactionType>,
     description: Option<String>,
+    category: Option<String>,
 }
 
 impl TransactionListFilter {
@@ -232,12 +245,14 @@ impl TransactionListFilter {
         month: Option<u32>,
         transaction_type: Option<TransactionType>,
         description: Option<String>,
+        category: Option<String>,
     ) -> Self {
         Self {
             year,
             month,
             transaction_type,
             description,
+            category,
         }
     }
 

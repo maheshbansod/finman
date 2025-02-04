@@ -31,9 +31,11 @@ fn main() -> Result<()> {
             month,
             transaction_type,
             description,
+            category,
         } => {
             let mut app = App::new()?;
-            let filter = TransactionListFilter::new(year, month, transaction_type, description);
+            let filter =
+                TransactionListFilter::new(year, month, transaction_type, description, category);
             let transactions = app.list_transactions(filter)?;
             app.display_transactions(transactions);
         }

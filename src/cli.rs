@@ -26,7 +26,10 @@ pub enum Commands {
         #[arg(short, long)]
         transaction_type: Option<TransactionType>,
         #[arg(short, long)]
-        /// searches this case-insensitively within description
+        /// regex search this case-insensitively
         description: Option<String>,
+        #[arg(short, long)]
+        /// regex search this case-insensitively
+        category: Option<String>,
     },
 }
