@@ -116,8 +116,8 @@ impl App {
         month: u32,
     ) -> PathBuf {
         let file_name = format!("{year}-{month}-{transaction_type}.json");
-        let file_path = self.config.data_dir.join(&file_name);
-        file_path
+        
+        self.config.data_dir.join(&file_name)
     }
 
     fn transaction_file_path_from_transaction(&self, transaction: &Transaction) -> PathBuf {
@@ -144,9 +144,9 @@ impl App {
         let data_dir = &self.config.data_dir;
         if !matches!(data_dir.try_exists(), Ok(true)) {
             println!("Creating data directory at {data_dir:?}");
-            fs::create_dir(&data_dir)?;
+            fs::create_dir(data_dir)?;
         }
-        for (&ref file_path, &ref transactions) in grouped_transactions.iter() {
+        for (file_path, transactions) in grouped_transactions.iter() {
             let file_path = data_dir.join(file_path);
             let transactions_file = TransactionsFile::from(transactions);
             let transaction_str = serde_json::to_string(&transactions_file)?;
@@ -171,7 +171,7 @@ impl App {
         let pattern = self
             .config
             .data_dir
-            .join(&format!("{year}-{month}-{transaction_type}.json"))
+            .join(format!("{year}-{month}-{transaction_type}.json"))
             .to_string_lossy()
             .to_string();
         let mut transactions = Vec::new();
@@ -279,7 +279,7 @@ impl TransactionsFile {
     fn from(transactions: &[&Transaction]) -> Self {
         Self {
             version: 1,
-            transactions: transactions.into_iter().cloned().cloned().collect(),
+            transactions: transactions.iter().cloned().cloned().collect(),
         }
     }
 }
