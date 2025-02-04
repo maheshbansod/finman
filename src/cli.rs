@@ -32,5 +32,18 @@ pub enum Commands {
         /// regex search this case-insensitively
         category: Option<String>,
     },
-    Dashboard,
+    Dashboard {
+        #[arg(short, long)]
+        year: Option<i32>,
+        #[arg(short, long)]
+        month: Option<u32>,
+        #[arg(short, long)]
+        transaction_type: Option<TransactionType>,
+        #[arg(short, long)]
+        /// regex search this case-insensitively
+        description: Option<String>,
+        #[arg(short, long)]
+        /// regex search this case-insensitively
+        category: Option<String>,
+    },
 }

@@ -39,9 +39,18 @@ fn main() -> Result<()> {
             let transactions = app.list_transactions(filter)?;
             app.display_transactions(transactions);
         }
-        Commands::Dashboard => {
+        Commands::Dashboard {
+            year,
+            month,
+            transaction_type,
+            description,
+            category,
+        } => {
             let mut app = App::new()?;
-            app.dashboard()?;
+            let filter =
+                TransactionListFilter::new(year, month, transaction_type, description, category);
+            let transactions = app.list_transactions(filter)?;
+            app.transactions_summary(transactions)?;
         }
     };
     Ok(())

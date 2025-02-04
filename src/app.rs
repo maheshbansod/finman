@@ -229,8 +229,7 @@ impl App {
 
     /// Generates dashboard - would be expensive probably. i should consider
     /// caching stuff in the filesystem at some point
-    pub fn dashboard(&mut self) -> Result<()> {
-        let transactions = self.list_transactions(TransactionListFilter::default())?;
+    pub fn transactions_summary(&mut self, transactions: Vec<Transaction>) -> Result<()> {
         let mut sum_expenses = 0.0;
         let mut sum_income = 0.0;
         let mut months_considered = HashSet::new();
@@ -254,6 +253,9 @@ impl App {
         println!("Average income per month: {average_income_pm}");
         let average_profit_pm = total / total_months as f32;
         println!("Average profit per month: {average_profit_pm}");
+
+        println!("Total expenses: {sum_expenses}");
+        println!("Total income: {sum_income}");
 
         Ok(())
     }
