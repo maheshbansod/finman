@@ -32,4 +32,5 @@ pub enum Commands {
         /// regex search this case-insensitively
         category: Option<String>,
     },
+    Dashboard,
 }

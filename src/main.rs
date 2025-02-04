@@ -39,6 +39,10 @@ fn main() -> Result<()> {
             let transactions = app.list_transactions(filter)?;
             app.display_transactions(transactions);
         }
+        Commands::Dashboard => {
+            let mut app = App::new()?;
+            app.dashboard()?;
+        }
     };
     Ok(())
 }

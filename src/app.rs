@@ -226,8 +226,40 @@ impl App {
         println!("Income: {income}");
         println!("Sum: Income - Expenses = {sum}");
     }
+
+    /// Generates dashboard - would be expensive probably. i should consider
+    /// caching stuff in the filesystem at some point
+    pub fn dashboard(&mut self) -> Result<()> {
+        let transactions = self.list_transactions(TransactionListFilter::default())?;
+        let mut sum_expenses = 0.0;
+        let mut sum_income = 0.0;
+        let mut months_considered = HashSet::new();
+        for t in transactions.iter() {
+            months_considered.insert((t.date.year(), t.date.month()));
+            match t.transaction_type {
+                TransactionType::Income => sum_income += t.amount,
+                TransactionType::Expense => sum_expenses += t.amount,
+            }
+        }
+        let total = sum_income - sum_expenses;
+        println!("Total: {total}");
+        let average_expense_amount = sum_expenses / transactions.len() as f32;
+        println!("Average expense amount: {average_expense_amount}");
+        let average_income_amount = sum_income / transactions.len() as f32;
+        println!("Average income amount: {average_income_amount}");
+        let total_months = months_considered.len();
+        let average_expense_pm = sum_expenses / total_months as f32;
+        println!("Average expenses per month: {average_expense_pm}");
+        let average_income_pm = sum_income / total_months as f32;
+        println!("Average income per month: {average_income_pm}");
+        let average_profit_pm = total / total_months as f32;
+        println!("Average profit per month: {average_profit_pm}");
+
+        Ok(())
+    }
 }
 
+#[derive(Default)]
 pub struct TransactionListFilter {
     year: Option<i32>,
     month: Option<u32>,
