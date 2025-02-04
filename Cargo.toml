@@ -3,6 +3,8 @@ name = "finman"
 version = "0.1.0"
 edition = "2021"
 
+default-run = "finman"
+
 [dependencies]
 anyhow = "1.0.95"
 chrono = { version = "0.4.39", features = ["serde"] }
