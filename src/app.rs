@@ -1,12 +1,12 @@
 use std::{
-    borrow::Borrow,
     collections::{HashMap, HashSet},
     fs, io,
     path::PathBuf,
 };
 
 use anyhow::{bail, Result};
-use chrono::{DateTime, Datelike, Utc};
+use chrono::{DateTime, Datelike, Local};
+use glob::MatchOptions;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -42,7 +42,7 @@ impl App {
             amount,
             description,
             category,
-            Utc::now(),
+            Local::now(),
         )?;
         Ok(())
     }
@@ -53,7 +53,7 @@ impl App {
         amount: f32,
         description: &str,
         category: &str,
-        date: DateTime<Utc>,
+        date: DateTime<Local>,
     ) -> Result<()> {
         let year = date.year();
         let month = date.month();
@@ -152,6 +152,69 @@ impl App {
             fs::write(&file_path, transaction_str)?;
         }
         Ok(())
+    }
+
+    pub fn list_transactions(&mut self, filter: TransactionListFilter) -> Result<Vec<Transaction>> {
+        let year = filter
+            .year
+            .map(|year| year.to_string())
+            .unwrap_or("*".into());
+        let month = filter
+            .month
+            .map(|month| month.to_string())
+            .unwrap_or("*".into());
+        let transaction_type = filter
+            .transaction_type
+            .map(|t| t.to_string())
+            .unwrap_or("*".into());
+        let pattern = self
+            .config
+            .data_dir
+            .join(&format!("{year}-{month}-{transaction_type}.json"))
+            .to_string_lossy()
+            .to_string();
+        let mut transactions = Vec::new();
+        let options = MatchOptions {
+            ..Default::default()
+        };
+        for path in glob::glob_with(&pattern, options)? {
+            let path = path.unwrap();
+            println!("{path:?}");
+            let t_file = fs::read_to_string(&path)?;
+            let t_file: TransactionsFile = serde_json::from_str(&t_file)?;
+            let mut t = t_file.transactions;
+            transactions.append(&mut t);
+        }
+        Ok(transactions)
+    }
+}
+
+pub struct TransactionListFilter {
+    year: Option<i32>,
+    month: Option<u32>,
+    transaction_type: Option<TransactionType>,
+}
+
+impl TransactionListFilter {
+    pub fn new() -> Self {
+        Self {
+            year: None,
+            month: None,
+            transaction_type: None,
+        }
+    }
+
+    pub fn month(mut self, m: u32) -> Self {
+        self.month = Some(m);
+        self
+    }
+    pub fn transaction_type(mut self, t: TransactionType) -> Self {
+        self.transaction_type = Some(t);
+        self
+    }
+    pub fn year(mut self, y: i32) -> Self {
+        self.year = Some(y);
+        self
     }
 }
 

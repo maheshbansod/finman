@@ -1,7 +1,7 @@
 use std::fs;
 
 use anyhow::Result;
-use chrono::TimeZone;
+use chrono::{DateTime, Datelike, Local, TimeZone, Utc};
 use finman::{app::App, transaction::TransactionType};
 use serde::Deserialize;
 
@@ -19,7 +19,7 @@ fn main() -> Result<()> {
             transaction.amount,
             &transaction.description,
             &transaction.group,
-            dt.unwrap().to_utc(),
+            dt.unwrap(),
         )?;
     }
     app.write()?;

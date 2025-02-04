@@ -18,4 +18,12 @@ pub enum Commands {
         description: String,
         category: Option<String>,
     },
+    List {
+        #[arg(short, long)]
+        year: Option<i32>,
+        #[arg(short, long)]
+        month: Option<u32>,
+        #[arg(short, long)]
+        transaction_type: Option<TransactionType>,
+    },
 }

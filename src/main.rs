@@ -1,9 +1,8 @@
 use anyhow::Result;
 use clap::Parser;
-use finman::app::App;
+use finman::app::{App, TransactionListFilter};
 use finman::cli::{Cli, Commands};
 
-// todo: i gotta do error handling stuff soon
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
@@ -26,6 +25,27 @@ fn main() -> Result<()> {
             println!("Added.");
             app.write()?;
             println!("Written.");
+        }
+        Commands::List {
+            year,
+            month,
+            transaction_type,
+        } => {
+            let mut app = App::new()?;
+            let mut filter = TransactionListFilter::new();
+            if let Some(year) = year {
+                filter = filter.year(year);
+            }
+            if let Some(month) = month {
+                filter = filter.month(month);
+            }
+            if let Some(transaction_type) = transaction_type {
+                filter = filter.transaction_type(transaction_type);
+            }
+            let transactions = app.list_transactions(filter)?;
+            for transaction in transactions {
+                println!("{transaction}");
+            }
         }
     };
     Ok(())

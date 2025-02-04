@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local};
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +17,7 @@ pub struct Transaction {
     pub description: String,
     pub category: String,
     pub transaction_type: TransactionType,
-    pub date: DateTime<Utc>,
+    pub date: DateTime<Local>,
 }
 
 impl Display for TransactionType {
@@ -26,5 +26,15 @@ impl Display for TransactionType {
             TransactionType::Expense => write!(f, "expenses"),
             TransactionType::Income => write!(f, "income"),
         }
+    }
+}
+
+impl Display for Transaction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {} {} {} {}",
+            self.transaction_type, self.amount, self.category, self.description, self.date
+        )
     }
 }
